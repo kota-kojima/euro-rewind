@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EURO REWIND</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700&family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #00e5ff;
+    --accent2: #ff3d6b;
+    --pl: #3d0059;
+    --pl-accent: #00d4aa;
+    --ll-accent: #f39c12;
+    --text: #e8e8f0;
+    --text-dim: #7070a0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+  header {
+    padding: 40px 0 30px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 36px;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,229,255,0.4);
+    line-height: 1;
+  }
+  .logo-sub {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 6px;
+    color: var(--text-dim);
+  }
+  .info-banner {
+    background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(0,212,170,0.05));
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin-bottom: 28px;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .info-banner strong { color: var(--pl-accent); }
+  .league-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .league-tab {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    padding: 10px 22px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .league-tab.pl.active {
+    background: var(--pl);
+    border-color: var(--pl-accent);
+    color: var(--pl-accent);
+    box-shadow: 0 0 20px rgba(0,212,170,0.2);
+  }
+  .league-tab.ll.active {
+    background: rgba(192,57,43,0.3);
+    border-color: var(--ll-accent);
+    color: var(--ll-accent);
+    box-shadow: 0 0 20px rgba(243,156,18,0.2);
+  }
+  .league-tab:hover:not(.active) { border-color: var(--text-dim); color: var(--text); }
+  .matchday-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .matchday-ctrl label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .matchday-stepper {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .step-btn {
+    background: var(--surface2);
+    border: none;
+    color: var(--text);
+    padding: 8px 14px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.15s;
+    line-height: 1;
+  }
+  .step-btn:hover { background: var(--border); }
+  .matchday-num {
+    background: var(--surface2);
+    border: none;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    color: var(--accent);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    width: 64px;
+    text-align: center;
+    outline: none;
+    padding: 4px 0;
+  }
+  .matchday-num::-webkit-inner-spin-button,
+  .matchday-num::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .btn-fetch {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    padding: 10px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-fetch:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px rgba(0,229,255,0.3); }
+  .btn-fetch:disabled { opacity: 0.4; cursor: not-allowed; }
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 768px) { .content-grid { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel-icon { font-size: 16px; }
+  .panel-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--text-dim);
+  }
+  .panel-body {
+    padding: 16px;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+  .panel-body::-webkit-scrollbar { width: 4px; }
+  .panel-body::-webkit-scrollbar-track { background: transparent; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .standings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .standings-table th {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    padding: 6px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .standings-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(42,42,61,0.5);
+    vertical-align: middle;
+  }
+  .standings-table td.pts { text-align: right; color: var(--accent); font-weight: 700; }
+  .rank-num {
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    color: var(--text-dim);
+    width: 24px;
+    text-align: center;
+    display: inline-block;
+  }
+  .rank-top { color: var(--pl-accent) !important; }
+  .scorer-row {
+    display: flex;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(42,42,61,0.5);
+    gap: 12px;
+  }
+  .scorer-rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--text-dim);
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .scorer-rank.top { color: var(--accent2); }
+  .scorer-info { flex: 1; min-width: 0; }
+  .scorer-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .scorer-team { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .scorer-goals { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent2); flex-shrink: 0; }
+  .panel-full {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    padding: 16px;
+  }
+  .highlight-card-wrapper {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    transition: border-color 0.2s;
+  }
+  .highlight-card-wrapper:hover { border-color: rgba(0,229,255,0.3); }
+  .highlight-match-label { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .highlight-link {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 1px;
+    text-decoration: none;
+    background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.3);
+    color: var(--accent);
+    transition: all 0.15s;
+  }
+  .highlight-link:hover { background: var(--accent); color: #000; }
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 12px;
+    color: var(--text-dim);
+    font-size: 13px;
+    letter-spacing: 2px;
+    font-family: 'Oswald', sans-serif;
+  }
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { padding: 40px; text-align: center; color: var(--text-dim); font-size: 13px; }
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 13px;
+    z-index: 100;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-color: var(--accent2); color: var(--accent2); }
+  .toast.success { border-color: var(--pl-accent); color: var(--pl-accent); }
+
+  /* API Section */
+  .api-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+  .api-section-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .api-inputs {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: end;
+  }
+  @media (max-width: 640px) { .api-inputs { grid-template-columns: 1fr; } }
+  .input-group label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    font-family: 'Oswald', sans-serif;
+  }
+  .input-group input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-group input:focus { border-color: var(--accent); }
+  .btn-save {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .btn-save:hover { opacity: 0.85; }
+
+  /* Calendar */
+  .cal-nav-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+  }
+  .cal-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-cal-load {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-cal-load:hover { background: var(--accent); color: #000; }
+  .calendar-grid {
+    padding: 16px;
+  }
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+  }
+  .cal-weekday {
+    text-align: center;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    padding: 6px 0;
+  }
+  .cal-weekday.sun { color: #ff6b6b; }
+  .cal-weekday.sat { color: #6baeff; }
+  .cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+  .cal-day {
+    min-height: 72px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px;
+    position: relative;
+  }
+  .cal-day.empty-day { background: transparent; border-color: transparent; }
+  .cal-day.has-match { border-color: rgba(0,229,255,0.25); }
+  .cal-day-num {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .cal-day.today .cal-day-num {
+    color: var(--accent);
+    font-size: 15px;
+  }
+  .cal-day.sun .cal-day-num { color: #ff6b6b; }
+  .cal-day.sat .cal-day-num { color: #6baeff; }
+  .cal-match-chip {
+    display: block;
+    background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 3px;
+    padding: 2px 5px;
+    font-size: 10px;
+    color: var(--accent);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div>
+      <div class="logo">EURO REWIND</div>
+      <div class="logo-sub">追いかけ視聴サポーター</div>
+    </div>
+  </header>
+
+  <div class="info-banner">
+    <strong>✓ 順位表・ハイライト</strong>　Wikipedia の公開データを使用（APIキー不要）。<br>
+    <strong>✓ カレンダー</strong>　API-Football を使用（APIキーが必要・無料）。
+  </div>
+
+  <!-- API Key for Calendar -->
+  <div class="api-section">
+    <div class="api-section-header" onclick="toggleApiSection()">
+      <span style="font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;color:var(--text-dim)">⚙ CALENDAR API KEY</span>
+      <span id="apiStatusBadge" style="font-size:11px;margin-left:auto;color:var(--text-dim)">未設定</span>
+      <span id="apiArrow" style="color:var(--text-dim);margin-left:10px;font-size:12px">▼</span>
+    </div>
+    <div id="apiBody" style="margin-top:14px;">
+      <div class="api-inputs">
+        <div class="input-group">
+          <label>API-FOOTBALL KEY</label>
+          <input type="password" id="calApiKey" placeholder="3c9a7ea8...">
+        </div>
+        <button class="btn-save" onclick="saveCalApiKey()">SAVE</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="league-tabs">
+    <button class="league-tab pl active" id="tab-pl" onclick="switchLeague('PL')">🏴󠁧󠁢󠁥󠁮󠁧󠁿 PREMIER LEAGUE</button>
+    <button class="league-tab ll" id="tab-ll" onclick="switchLeague('LL')">🇪🇸 LA LIGA</button>
+  </div>
+
+  <div class="matchday-ctrl">
+    <label>MATCHDAY</label>
+    <div class="matchday-stepper">
+      <button class="step-btn" onclick="changeMatchday(-1)">−</button>
+      <input class="matchday-num" type="number" id="matchdayInput" value="1" min="1" max="38">
+      <button class="step-btn" onclick="changeMatchday(1)">＋</button>
+    </div>
+    <button class="btn-fetch" id="loadBtn" onclick="loadAll()">▶ LOAD</button>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">🏆</span>
+        <span class="panel-title">STANDINGS</span>
+      </div>
+      <div class="panel-body" id="standingsBody">
+        <div class="empty">節を選んでLOADしてください</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-full">
+    <div class="panel-header">
+      <span class="panel-icon">▶</span>
+      <span class="panel-title" id="highlightsTitle">HIGHLIGHTS — YouTube</span>
+    </div>
+    <div id="highlightsBody">
+      <div class="empty">節を選んでLOADしてください</div>
+    </div>
+  </div>
+
+  <!-- Calendar -->
+  <div class="panel-full" style="margin-top:20px;">
+    <div class="panel-header" style="flex-wrap:wrap;gap:10px;">
+      <span class="panel-icon">📅</span>
+      <span class="panel-title">SCHEDULE CALENDAR</span>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+        <button class="cal-nav-btn" onclick="changeCalMonth(-1)">‹</button>
+        <span id="calMonthLabel" style="font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;color:var(--text);min-width:110px;text-align:center"></span>
+        <button class="cal-nav-btn" onclick="changeCalMonth(1)">›</button>
+        <button class="btn-cal-load" onclick="loadCalendar()">▶ LOAD</button>
+      </div>
+    </div>
+    <div id="calendarBody">
+      <div class="empty">APIキーを設定してLOADしてください</div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let currentLeague = 'PL';
+
+// Wikipedia日本語版の記事名
+// ※毎シーズン更新が必要な箇所
+const WIKI_PAGES = {
+  PL: 'プレミアリーグ2025-2026',
+  LL: 'リーガ・エスパニョーラ2025-2026',
+};
+const LEAGUE_NAMES = {
+  PL: 'プレミアリーグ',
+  LL: 'ラ・リーガ',
+};
+
+function getSeasonLabel() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const start = month >= 8 ? year : year - 1;
+  const s = String(start).slice(-2);
+  const e = String((start + 1) % 100).padStart(2, '0');
+  return `${s}%2F${e}`;
+}
+
+function switchLeague(code) {
+  currentLeague = code;
+  document.querySelectorAll('.league-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(code === 'PL' ? 'tab-pl' : 'tab-ll').classList.add('active');
+  // リーグ切り替え時にカレンダーキャッシュをクリア
+  calFixtures = [];
+}
+
+window.onload = () => {
+  initCalendar();
+};
+
+function changeMatchday(delta) {
+  const inp = document.getElementById('matchdayInput');
+  let v = parseInt(inp.value) + delta;
+  if (v < 1) v = 1;
+  if (v > 38) v = 38;
+  inp.value = v;
+}
+
+function setLoading(id) {
+  document.getElementById(id).innerHTML = `<div class="loading"><div class="spinner"></div>LOADING</div>`;
+}
+
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = 'toast', 4000);
+}
+
+// Wikipedia API でHTMLを取得
+async function fetchWikiHTML(pageTitle) {
+  const url = `https://ja.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(pageTitle)}&prop=text&formatversion=2&format=json&origin=*`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(`Wikipediaページが見つかりません。記事名: ${pageTitle}`);
+  return data.parse.text;
+}
+
+// 順位推移表をパース → 指定節の順位リストを返す
+function extractStandings(dom, matchday) {
+  const tables = dom.querySelectorAll('table.wikitable');
+  for (const tbl of tables) {
+    // ヘッダー行から列インデックスを探す
+    const headerRow = tbl.querySelector('tr');
+    if (!headerRow) continue;
+    const ths = Array.from(headerRow.querySelectorAll('th, td'));
+    let colIdx = -1;
+    ths.forEach((th, i) => {
+      if (th.textContent.trim() === String(matchday)) colIdx = i;
+    });
+    if (colIdx === -1) continue;
+
+    // 各チーム行をパース
+    const rows = Array.from(tbl.querySelectorAll('tr')).slice(1);
+    const result = [];
+    for (const row of rows) {
+      const cells = row.querySelectorAll('td, th');
+      if (cells.length <= colIdx) continue;
+      const teamName = cells[0].textContent.trim().replace(/\[.*?\]/g, '').trim();
+      const rankText = cells[colIdx].textContent.trim();
+      const rank = parseInt(rankText);
+      if (teamName && !isNaN(rank) && rank > 0) {
+        result.push({ team: teamName, rank });
+      }
+    }
+    if (result.length >= 5) {
+      result.sort((a, b) => a.rank - b.rank);
+      return result;
+    }
+  }
+  return null;
+}
+
+// 得点ランキング表をパース
+function extractScorers(dom) {
+  const tables = dom.querySelectorAll('table.wikitable');
+  for (const tbl of tables) {
+    const headerRow = tbl.querySelector('tr');
+    if (!headerRow) continue;
+    const ths = Array.from(headerRow.querySelectorAll('th, td')).map(th => th.textContent.trim());
+
+    // 「得点」列があるテーブルを探す
+    const goalsIdx = ths.findIndex(h => h === '得点' || h === 'Goals' || h === 'ゴール');
+    if (goalsIdx === -1) continue;
+
+    const nameIdx = ths.findIndex(h => h === '選手' || h === 'Player' || h === '名前' || h === '氏名');
+    const teamIdx = ths.findIndex(h => h === 'クラブ' || h === 'Club' || h === 'チーム');
+    if (nameIdx === -1) continue;
+
+    const rows = Array.from(tbl.querySelectorAll('tr')).slice(1);
+    const result = [];
+    for (const row of rows) {
+      const cells = row.querySelectorAll('td, th');
+      if (cells.length <= goalsIdx) continue;
+      const name = cells[nameIdx]?.textContent.trim().replace(/\[.*?\]/g, '') || '';
+      const team = teamIdx >= 0 ? (cells[teamIdx]?.textContent.trim().replace(/\[.*?\]/g, '') || '') : '';
+      const goals = parseInt(cells[goalsIdx]?.textContent.trim());
+      if (name && !isNaN(goals) && goals >= 0) {
+        result.push({ name, team, goals });
+      }
+    }
+    if (result.length >= 3) {
+      result.sort((a, b) => b.goals - a.goals);
+      return result.slice(0, 15);
+    }
+  }
+  return null;
+}
+
+function renderStandings(data) {
+  if (!data || !data.length) {
+    document.getElementById('standingsBody').innerHTML =
+      '<div class="empty">順位表データが見つかりませんでした<br><small style="font-size:11px;margin-top:8px;display:block">Wikipediaの記事にまだ掲載されていない可能性があります</small></div>';
+    return;
+  }
+  let html = `<table class="standings-table"><thead><tr><th>#</th><th>CLUB</th></tr></thead><tbody>`;
+  data.forEach((row, i) => {
+    html += `<tr>
+      <td><span class="rank-num ${i < 4 ? 'rank-top' : ''}">${row.rank}</span></td>
+      <td>${row.team}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('standingsBody').innerHTML = html;
+}
+
+function renderScorers(data) {
+  if (!data || !data.length) {
+    document.getElementById('scorersBody').innerHTML =
+      '<div class="empty">得点ランキングデータが見つかりませんでした</div>';
+    return;
+  }
+  let html = '';
+  data.forEach((s, i) => {
+    html += `<div class="scorer-row">
+      <div class="scorer-rank ${i < 3 ? 'top' : ''}">${i + 1}</div>
+      <div class="scorer-info">
+        <div class="scorer-name">${s.name}</div>
+        <div class="scorer-team">${s.team}</div>
+      </div>
+      <div class="scorer-goals">${s.goals}</div>
+    </div>`;
+  });
+  document.getElementById('scorersBody').innerHTML = html;
+}
+
+function renderHighlights(teams, matchday) {
+  if (matchday > 38) {
+    document.getElementById('highlightsTitle').textContent = 'HIGHLIGHTS — YouTube';
+    document.getElementById('highlightsBody').innerHTML = '<div class="empty">最終節です。お疲れ様でした！</div>';
+    return;
+  }
+  document.getElementById('highlightsTitle').textContent = `HIGHLIGHTS — 第${matchday}節 YouTube`;
+  if (!teams || !teams.length) {
+    document.getElementById('highlightsBody').innerHTML = '<div class="empty">チーム情報が取得できませんでした</div>';
+    return;
+  }
+  const season = getSeasonLabel();
+  const leagueName = LEAGUE_NAMES[currentLeague];
+  let html = '<div class="highlights-grid">';
+  teams.forEach(team => {
+    const q = [
+      encodeURIComponent(team),
+      encodeURIComponent(`第${matchday}節`),
+      encodeURIComponent('ハイライト'),
+      encodeURIComponent(leagueName),
+      season,
+    ].join('+');
+    const url = `https://www.youtube.com/results?search_query=${q}`;
+    html += `<div class="highlight-card-wrapper">
+      <div class="highlight-match-label">${team}</div>
+      <a class="highlight-link" href="${url}" target="_blank" rel="noopener">🔍 ハイライトを検索</a>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('highlightsBody').innerHTML = html;
+}
+
+// ── カレンダー機能 ─────────────────────────────────────
+let calApiKey = '';
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-11
+let calFixtures = []; // キャッシュ
+
+const LEAGUE_IDS = { PL: 39, LL: 140 };
+const MONTH_NAMES = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const WEEKDAY_NAMES = ['日','月','火','水','木','金','土'];
+
+// カレンダー初期化はwindow.onloadにまとめる
+function initCalendar() {
+  calApiKey = localStorage.getItem('cal_api_key') || '';
+  if (calApiKey) {
+    document.getElementById('calApiKey').value = calApiKey;
+    document.getElementById('apiStatusBadge').textContent = '設定済 ✓';
+    document.getElementById('apiStatusBadge').style.color = 'var(--pl-accent)';
+    document.getElementById('apiBody').style.display = 'none';
+    document.getElementById('apiArrow').textContent = '▶';
+  }
+  updateCalMonthLabel();
+}
+
+function toggleApiSection() {
+  const body = document.getElementById('apiBody');
+  const arrow = document.getElementById('apiArrow');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? 'block' : 'none';
+  arrow.textContent = hidden ? '▼' : '▶';
+}
+
+function saveCalApiKey() {
+  const key = document.getElementById('calApiKey').value.trim();
+  if (!key) { showToast('APIキーを入力してください', 'error'); return; }
+  calApiKey = key;
+  localStorage.setItem('cal_api_key', key);
+  document.getElementById('apiStatusBadge').textContent = '設定済 ✓';
+  document.getElementById('apiStatusBadge').style.color = 'var(--pl-accent)';
+  document.getElementById('apiBody').style.display = 'none';
+  document.getElementById('apiArrow').textContent = '▶';
+  calFixtures = [];
+  showToast('APIキーを保存しました ✓', 'success');
+}
+
+function updateCalMonthLabel() {
+  document.getElementById('calMonthLabel').textContent = `${calYear}年 ${MONTH_NAMES[calMonth]}`;
+}
+
+function changeCalMonth(delta) {
+  calMonth += delta;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  updateCalMonthLabel();
+  if (calFixtures.length > 0) renderCalendar(calFixtures);
+}
+
+async function loadCalendar() {
+  if (!calApiKey) { showToast('カレンダー用APIキーを設定してください', 'error'); return; }
+  document.getElementById('calendarBody').innerHTML = `<div class="loading"><div class="spinner"></div>LOADING</div>`;
+
+  const leagueId = LEAGUE_IDS[currentLeague];
+  const season = getSeasonYear();
+
+  try {
+    const res = await fetch(
+      `https://v3.football.api-sports.io/fixtures?league=${leagueId}&season=${season}`,
+      { headers: { 'x-apisports-key': calApiKey } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      throw new Error(Object.values(data.errors)[0]);
+    }
+    calFixtures = data.response || [];
+    renderCalendar(calFixtures);
+    showToast(`${LEAGUE_NAMES[currentLeague]}の日程を取得しました ✓`, 'success');
+  } catch(e) {
+    document.getElementById('calendarBody').innerHTML = `<div class="empty">取得失敗: ${e.message}</div>`;
+    showToast(e.message, 'error');
+  }
+}
+
+function getSeasonYear() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  return month >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+}
+
+function renderCalendar(fixtures) {
+  // 表示月のfixturesだけ抽出
+  const monthFixtures = fixtures.filter(f => {
+    const d = new Date(f.fixture.date);
+    return d.getFullYear() === calYear && d.getMonth() === calMonth;
+  });
+
+  // 日付→試合リストのマップ
+  const dayMap = {};
+  monthFixtures.forEach(f => {
+    const d = new Date(f.fixture.date);
+    const day = d.getDate();
+    if (!dayMap[day]) dayMap[day] = [];
+    // ラウンドから節番号を抽出
+    const roundMatch = f.league.round?.match(/(\d+)$/);
+    const roundNum = roundMatch ? roundMatch[1] : '?';
+    dayMap[day].push({
+      round: roundNum,
+      home: f.teams.home.name,
+      away: f.teams.away.name,
+      time: new Date(f.fixture.date).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Tokyo'}),
+    });
+  });
+
+  const today = new Date();
+  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=日
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  let html = `<div class="calendar-grid">
+    <div class="cal-weekdays">`;
+  WEEKDAY_NAMES.forEach((d, i) => {
+    const cls = i === 0 ? 'sun' : i === 6 ? 'sat' : '';
+    html += `<div class="cal-weekday ${cls}">${d}</div>`;
+  });
+  html += `</div><div class="cal-days">`;
+
+  // 空白マス
+  for (let i = 0; i < firstDay; i++) {
+    html += `<div class="cal-day empty-day"></div>`;
+  }
+
+  // 日付マス
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = (firstDay + d - 1) % 7;
+    const isToday = today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === d;
+    const matches = dayMap[d] || [];
+    const hasMatch = matches.length > 0;
+    const dowCls = dow === 0 ? 'sun' : dow === 6 ? 'sat' : '';
+    html += `<div class="cal-day ${dowCls} ${isToday ? 'today' : ''} ${hasMatch ? 'has-match' : ''}">
+      <div class="cal-day-num">${d}</div>`;
+    matches.forEach(m => {
+      html += `<span class="cal-match-chip" title="${m.home} vs ${m.away} ${m.time}(JST)">第${m.round}節 ${m.time}</span>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `</div></div>`;
+  document.getElementById('calendarBody').innerHTML = html;
+}
+
+async function loadAll() {
+  const md = parseInt(document.getElementById('matchdayInput').value);
+  const btn = document.getElementById('loadBtn');
+  btn.disabled = true;
+  setLoading('standingsBody');
+  setLoading('highlightsBody');
+
+  try {
+    const html = await fetchWikiHTML(WIKI_PAGES[currentLeague]);
+    const div = document.createElement('div');
+    div.innerHTML = html;
+
+    const standings = extractStandings(div, md);
+    const teams = standings ? standings.map(s => s.team) : [];
+
+    renderStandings(standings);
+    // ハイライトは「指定節の次の節」を表示（ネタバレ防止）
+    renderHighlights(teams, md + 1);
+
+    if (standings) {
+      showToast(`第${md}節のデータを取得しました ✓`, 'success');
+    } else {
+      showToast(`第${md}節のデータがまだWikipediaに掲載されていない可能性があります`, 'error');
+    }
+  } catch(e) {
+    ['standingsBody','highlightsBody'].forEach(id => {
+      document.getElementById(id).innerHTML = `<div class="empty">取得失敗: ${e.message}</div>`;
+    });
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
